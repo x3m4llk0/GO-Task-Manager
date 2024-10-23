@@ -20,8 +20,8 @@
 1. Склонируйте репозиторий или скопируйте код в папку проекта:
 
    ```bash
-   git clone https://github.com/x3m4llk0/taskmanager.git
-   cd taskmanager
+   git clone https://github.com/x3m4llk0/GO-Task-Manager.git
+   cd go-task-manager
    ```
 
 2. Установите зависимости:
