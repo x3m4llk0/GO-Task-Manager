@@ -1,0 +1,12 @@
+# Исключаем ненужные файлы
+.git
+.idea
+*.log
+*.out
+*.swp
+.DS_Store
+/.venv/
+/.idea/
+__pycache__/
+/*.pyc
+.vscode

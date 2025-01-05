@@ -1,34 +1,30 @@
-package main
+package manager
 
 import (
-	"github.com/gin-gonic/gin"
+	"github.com/x3m4llk0/GO-Task-Manager/internal/models"
 	"net/http"
 	"strconv"
 	"time"
+
+	"github.com/gin-gonic/gin"
 )
 
-type Task struct {
-	ID          int       `json:"id"`
-	Title       string    `json:"title"`
-	Description string    `json:"description"`
-	Completed   bool      `json:"completed"`
-	CreatedAt   time.Time `json:"created_at"`
-	UpdatedAt   time.Time `json:"updated_at"`
-}
-
-type InMemoryTaskManager struct {
-	tasks  []Task
+// TaskManager управляет задачами в памяти.
+type TaskManager struct {
+	tasks  []models.Task
 	nextID int
 }
 
-func NewInMemoryTaskManager() *InMemoryTaskManager {
-	return &InMemoryTaskManager{
-		tasks:  []Task{},
+// NewTaskManager создаёт новый менеджер задач.
+func NewTaskManager() *TaskManager {
+	return &TaskManager{
+		tasks:  []models.Task{},
 		nextID: 1,
 	}
 }
 
-func (m *InMemoryTaskManager) AddTask(c *gin.Context) {
+// AddTask добавляет новую задачу.
+func (m *TaskManager) AddTask(c *gin.Context) {
 	var newTask struct {
 		Title       string `json:"title"`
 		Description string `json:"description"`
@@ -39,7 +35,7 @@ func (m *InMemoryTaskManager) AddTask(c *gin.Context) {
 		return
 	}
 
-	task := Task{
+	task := models.Task{
 		ID:          m.nextID,
 		Title:       newTask.Title,
 		Description: newTask.Description,
@@ -53,11 +49,13 @@ func (m *InMemoryTaskManager) AddTask(c *gin.Context) {
 	c.IndentedJSON(http.StatusCreated, task)
 }
 
-func (m *InMemoryTaskManager) ListTasks(c *gin.Context) {
+// ListTasks возвращает все задачи.
+func (m *TaskManager) ListTasks(c *gin.Context) {
 	c.IndentedJSON(http.StatusOK, m.tasks)
 }
 
-func (m *InMemoryTaskManager) UpdateTaskStatus(c *gin.Context) {
+// UpdateTaskStatus обновляет статус задачи.
+func (m *TaskManager) UpdateTaskStatus(c *gin.Context) {
 	id := c.Param("id")
 	intID, err := strconv.Atoi(id)
 	if err != nil {
@@ -86,7 +84,8 @@ func (m *InMemoryTaskManager) UpdateTaskStatus(c *gin.Context) {
 	c.IndentedJSON(http.StatusNotFound, gin.H{"error": "Task not found"})
 }
 
-func (m *InMemoryTaskManager) GetTaskById(c *gin.Context) {
+// GetTaskByID возвращает задачу по ID.
+func (m *TaskManager) GetTaskByID(c *gin.Context) {
 	id, ok := c.GetQuery("id")
 	if !ok {
 		c.IndentedJSON(http.StatusBadRequest, gin.H{"error": "ID query parameter is missing"})
@@ -109,7 +108,8 @@ func (m *InMemoryTaskManager) GetTaskById(c *gin.Context) {
 	c.IndentedJSON(http.StatusNotFound, gin.H{"error": "Task not found"})
 }
 
-func (m *InMemoryTaskManager) RemoveTask(c *gin.Context) {
+// RemoveTask удаляет задачу по ID.
+func (m *TaskManager) RemoveTask(c *gin.Context) {
 	id := c.Param("id")
 	intID, err := strconv.Atoi(id)
 	if err != nil {
@@ -125,20 +125,4 @@ func (m *InMemoryTaskManager) RemoveTask(c *gin.Context) {
 		}
 	}
 	c.IndentedJSON(http.StatusNotFound, gin.H{"error": "Task not found"})
-}
-
-func main() {
-	manager := NewInMemoryTaskManager()
-	router := gin.Default()
-
-	router.POST("/task", manager.AddTask)
-	router.GET("/tasks", manager.ListTasks)
-	router.GET("/task", manager.GetTaskById)
-	router.PATCH("/task/:id", manager.UpdateTaskStatus)
-	router.DELETE("/task/:id", manager.RemoveTask)
-
-	err := router.Run("localhost:8080")
-	if err != nil {
-		return
-	}
 }
